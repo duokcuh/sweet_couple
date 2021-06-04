@@ -3,9 +3,9 @@ import { Component } from 'react';
 
 export class ClassBased extends Component {
   
-  constructor(props) {
-    super(props);
-  }
+  // constructor(props) {
+  //   super(props);
+  // }
   
   render() {
     return (
