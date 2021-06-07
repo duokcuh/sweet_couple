@@ -1,19 +1,71 @@
 import { Component } from 'react';
+import { Loader } from './Loader';
 
 
 export class ClassBased extends Component {
   
-  // constructor(props) {
-  //   super(props);
-  // }
+  constructor(props) {
+    super(props);
+    this.state = {
+      value: '',
+      imgSrc: null,
+      isLoading: false
+    };
+  }
+  
+  changeHandler = event => {
+    this.setState(() => ({
+      value: event.target.value
+    }))
+  }
+  
+  submitHandler = async event => {
+    
+    event.preventDefault();
+    
+    this.setState({ isLoading: true });
+    
+    let url = 'https://api.giphy.com/v1/gifs/search?api_key=JnxTmEGKXjZeUKBzRjTQoMDg8OX8pS5U&rating=pg&q=';
+    let response = await fetch(url + this.state.value);
+    let result = await response.json();
+    this.setState(() => ({
+      imgSrc: result.data.map(gif => gif.images.fixed_height.url)
+    }));
+  
+    this.setState({ isLoading: false });
+    
+  }
   
   render() {
     return (
-      <span>ClassBased soon...</span>
-      // <form>
-      //   <input type='text'/>
-      //   <input type='submit'/>
-      // </form>
+      <>
+        <header>
+          ClassBased component
+        </header>
+        <form onSubmit = { this.submitHandler }>
+          <input
+            className = 'form-search'
+            type = 'text'
+            placeholder = 'Find gif'
+            value = { this.state.value }
+            onChange = { this.changeHandler }
+          />
+          <input
+            className = 'form-submit'
+            type = 'submit'
+            value = 'Search'
+          />
+        </form>
+    
+        { this.state.isLoading
+          ? <Loader />
+          : this.state.imgSrc && (
+            <div className = 'images-wrapper'>
+              { this.state.imgSrc.map((elem, id) => <img src = { elem } alt = { id } key = { id } />) }
+            </div>
+          )
+        }
+      </>
     )
   }
 }
