@@ -23,16 +23,29 @@ export class ClassBased extends Component {
     
     event.preventDefault();
     
+    if (!this.state.value.trim()) return;
+    
     this.setState({ isLoading: true });
     
     let url = 'https://api.giphy.com/v1/gifs/search?api_key=JnxTmEGKXjZeUKBzRjTQoMDg8OX8pS5U&rating=pg&q=';
     let response = await fetch(url + this.state.value);
     let result = await response.json();
-    this.setState(() => ({
-      imgSrc: result.data.map(gif => gif.images.fixed_height.url)
-    }));
+    
+    let total = result.data.length;
+    this.setState({ isLoading: total > 0 });
+    let loaded = 0;
+    let imgSrc = result.data.map(gif => {
+      let src = gif.images.fixed_height.url
+      let img = new Image();
+      img.src = src;
+      img.onload = () => {
+        loaded++;
+        if (total === loaded) this.setState({isLoading: false});
+      }
+      return src
+    });
   
-    this.setState({ isLoading: false });
+    this.setState({ imgSrc });
     
   }
   
@@ -49,6 +62,7 @@ export class ClassBased extends Component {
             placeholder = 'Find gif'
             value = { this.state.value }
             onChange = { this.changeHandler }
+            // required = 'true'
           />
           <input
             className = 'form-submit'
