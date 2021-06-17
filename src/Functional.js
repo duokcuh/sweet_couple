@@ -6,6 +6,7 @@ export const Functional = () => {
   const [ value, setValue ] = useState('');
   const [ imgSrc, setImgSrc ] = useState(null);
   const [ isLoading, setLoading ] = useState(false);
+  const [ loaded, setLoaded ] = useState(0);
   
   const changeHandler = event => setValue(event.target.value);
   
@@ -15,27 +16,23 @@ export const Functional = () => {
   
     if (!value.trim()) return;
     
-    setLoading(true);
-    
     let url = 'https://api.giphy.com/v1/gifs/search?api_key=JnxTmEGKXjZeUKBzRjTQoMDg8OX8pS5U&rating=pg&q=';
     let response = await fetch(url + value);
     let result = await response.json();
-    
-    let total = result.data.length;
-    setLoading(total > 0 );
-    let loaded = 0;
-    let imgSrc = result.data.map(gif => {
-      let src = gif.images.fixed_height.url;
+    let images = result.data.map(gif => gif.images.fixed_height.url);
+  
+    setImgSrc(images);
+    setLoading(images.length > 0 );
+    setLoaded(0);
+  
+    images.forEach(src => {
       let img = new Image();
       img.src = src;
       img.onload = () => {
-        loaded++;
-        if (total === loaded) setLoading(false);
+        setLoaded(loaded + 1);
+        if (loaded === images.length) setLoading(false);
       }
-      return src
     });
-  
-    setImgSrc(imgSrc);
   
   }
   
@@ -51,6 +48,7 @@ export const Functional = () => {
           placeholder = 'Find gif'
           value = { value }
           onChange = { changeHandler }
+          required
         />
         <input
           className = 'form-submit'
@@ -60,11 +58,18 @@ export const Functional = () => {
       </form>
       
       { isLoading
-        ? <Loader />
+        ?
+        <>
+          <p>Loading { Math.round(loaded/imgSrc.length*100) }%</p>
+          <Loader />
+        </>
         : imgSrc && (
-          <div className='images-wrapper'>
-            { imgSrc.map((elem, id) => <img src = { elem } alt = { id } key = { id } />) }
+        <>
+          <p>{ imgSrc.length || 'No' } search results</p>
+          <div className="images-wrapper">
+            { imgSrc.map((elem, id) => <img src={elem} alt={id} key={id}/>) }
           </div>
+        </>
         )
       }
     </>

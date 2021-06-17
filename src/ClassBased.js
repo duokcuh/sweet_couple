@@ -9,15 +9,12 @@ export class ClassBased extends Component {
     this.state = {
       value: '',
       imgSrc: null,
-      isLoading: false
+      isLoading: false,
+      loaded: 0
     };
   }
   
-  changeHandler = event => {
-    this.setState(() => ({
-      value: event.target.value
-    }))
-  }
+  changeHandler = event => this.setState({ value: event.target.value });
   
   submitHandler = async event => {
     
@@ -25,27 +22,25 @@ export class ClassBased extends Component {
     
     if (!this.state.value.trim()) return;
     
-    this.setState({ isLoading: true });
-    
     let url = 'https://api.giphy.com/v1/gifs/search?api_key=JnxTmEGKXjZeUKBzRjTQoMDg8OX8pS5U&rating=pg&q=';
     let response = await fetch(url + this.state.value);
     let result = await response.json();
+    let images = result.data.map(gif => gif.images.fixed_height.url);
+  
+    this.setState({
+      imgSrc: images,
+      isLoading: images.length > 0,
+      loaded: 0,
+    });
     
-    let total = result.data.length;
-    this.setState({ isLoading: total > 0 });
-    let loaded = 0;
-    let imgSrc = result.data.map(gif => {
-      let src = gif.images.fixed_height.url
+    images.forEach(src => {
       let img = new Image();
       img.src = src;
       img.onload = () => {
-        loaded++;
-        if (total === loaded) this.setState({isLoading: false});
+        this.setState(({ loaded }) => ({ loaded: loaded + 1 }));
+        if (this.state.loaded === images.length) this.setState({ isLoading: false })
       }
-      return src
     });
-  
-    this.setState({ imgSrc });
     
   }
   
@@ -62,7 +57,7 @@ export class ClassBased extends Component {
             placeholder = 'Find gif'
             value = { this.state.value }
             onChange = { this.changeHandler }
-            // required = 'true'
+            required
           />
           <input
             className = 'form-submit'
@@ -72,11 +67,18 @@ export class ClassBased extends Component {
         </form>
     
         { this.state.isLoading
-          ? <Loader />
+          ?
+            <>
+              <p>Loading { Math.round(this.state.loaded/this.state.imgSrc.length*100) }%</p>
+              <Loader />
+            </>
           : this.state.imgSrc && (
-            <div className = 'images-wrapper'>
-              { this.state.imgSrc.map((elem, id) => <img src = { elem } alt = { id } key = { id } />) }
-            </div>
+            <>
+              <p>{ this.state.imgSrc.length || 'No' } search results</p>
+              <div className="images-wrapper">
+                { this.state.imgSrc.map((elem, id) => <img src={elem} alt={id} key={id}/>) }
+              </div>
+            </>
           )
         }
       </>
