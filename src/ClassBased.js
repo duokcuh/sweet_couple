@@ -37,8 +37,10 @@ export class ClassBased extends Component {
       let img = new Image();
       img.src = src;
       img.onload = () => {
-        this.setState(({ loaded }) => ({ loaded: loaded + 1 }));
-        if (this.state.loaded === images.length) this.setState({ isLoading: false })
+        this.setState(({ loaded }) => ({
+          loaded: loaded + 1,
+          isLoading: loaded +1 !== images.length
+        }));
       }
     });
     

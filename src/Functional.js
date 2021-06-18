@@ -29,8 +29,10 @@ export const Functional = () => {
       let img = new Image();
       img.src = src;
       img.onload = () => {
-        setLoaded(loaded + 1);
-        if (loaded === images.length) setLoading(false);
+        setLoaded(prevLoaded => {
+          if (prevLoaded + 1 === images.length) setLoading(false);
+          return (prevLoaded + 1)
+        });
       }
     });
   
