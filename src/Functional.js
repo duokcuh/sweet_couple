@@ -39,7 +39,7 @@ export const Functional = () => {
         />
       </form>
       
-      { submitValue && <Images value = { submitValue } /> }
+      { submitValue && <Images query = { submitValue } /> }
       
     </>
   )
