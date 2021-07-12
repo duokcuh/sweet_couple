@@ -6,15 +6,17 @@ export const Functional = () => {
   const [ value, setValue ] = useState('');
   const [ submitValue, setSubmitValue ] = useState(null);
   
-  const changeHandler = event => setValue(event.target.value);
+  const changeHandler = event => {
+    setValue(event.target.value.trim() && event.target.value);
+  };
   
   const submitHandler = event => {
     
     event.preventDefault();
-  
-    if (!value.trim()) return;
-    
-    setSubmitValue(value);
+    let currentValue = value.trim();
+    setValue(currentValue);
+    if (!currentValue) return;
+    setSubmitValue(currentValue);
   
   }
   

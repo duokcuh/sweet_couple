@@ -5,20 +5,20 @@ const
   FETCH_SRC = 'FETCH_SRC',
   LOAD_IMG = 'LOAD_IMG';
 
-function reducer (state, { type, payload }) {
+const reducer = (state, { type, payload }) => {
   switch (type) {
     case FETCH_SRC:
       return {
+        ...state,
         imgSrc: payload,
         loaded: 0,
         isLoading: payload.length > 0,
-        ...state
       };
     case LOAD_IMG:
       return {
+        ...state,
         loaded: state.loaded + 1,
         isLoading: state.loaded + 1 !== payload.length,
-        ...state
       };
     default :
       return {
@@ -42,7 +42,7 @@ export const Images = ({ query }) => {
       let response = await fetch(url + query);
       let result = await response.json();
       let images = result.data.map(gif => gif.images.fixed_height.url);
-      
+  
       dispatch({
         type: FETCH_SRC,
         payload: images
@@ -51,20 +51,16 @@ export const Images = ({ query }) => {
       images.forEach(src => {
         let img = new Image();
         img.src = src;
-        img.onload = () => {
-          dispatch({
-            type: LOAD_IMG,
-            payload: images,
-          });
-        }
-      })
+        img.onload = () => dispatch({
+          type: LOAD_IMG,
+          payload: images,
+        });
+      });
     };
     
     getSrc();
-    
-  }, [query])
   
-  
+  }, [query]);
   
   return (
     <>

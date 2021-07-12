@@ -1,5 +1,5 @@
 import { Component } from 'react';
-import { Loader } from './Loader';
+import { Images } from './Images';
 
 
 export class ClassBased extends Component {
@@ -8,41 +8,21 @@ export class ClassBased extends Component {
     super(props);
     this.state = {
       value: '',
-      imgSrc: null,
-      isLoading: false,
-      loaded: 0
+      submitValue: null,
     };
   }
   
-  changeHandler = event => this.setState({ value: event.target.value });
+  changeHandler = event => {
+    this.setState({value: event.target.value.trim() && event.target.value})
+  };
   
-  submitHandler = async event => {
+  submitHandler = event => {
     
     event.preventDefault();
-    
-    if (!this.state.value.trim()) return;
-    
-    let url = 'https://api.giphy.com/v1/gifs/search?api_key=JnxTmEGKXjZeUKBzRjTQoMDg8OX8pS5U&rating=pg&q=';
-    let response = await fetch(url + this.state.value);
-    let result = await response.json();
-    let images = result.data.map(gif => gif.images.fixed_height.url);
-  
-    this.setState({
-      imgSrc: images,
-      isLoading: images.length > 0,
-      loaded: 0,
-    });
-    
-    images.forEach(src => {
-      let img = new Image();
-      img.src = src;
-      img.onload = () => {
-        this.setState(({ loaded }) => ({
-          loaded: loaded + 1,
-          isLoading: loaded +1 !== images.length
-        }));
-      }
-    });
+    let currentValue = this.state.value.trim();
+    this.setState({value: currentValue});
+    if (!currentValue) return;
+    this.setState({submitValue: currentValue});
     
   }
   
@@ -67,22 +47,8 @@ export class ClassBased extends Component {
             value = 'Search'
           />
         </form>
-    
-        { this.state.isLoading
-          ?
-            <>
-              <p>Loading { Math.round(this.state.loaded/this.state.imgSrc.length*100) }%</p>
-              <Loader />
-            </>
-          : this.state.imgSrc && (
-            <>
-              <p>{ this.state.imgSrc.length || 'No' } search results</p>
-              <div className="images-wrapper">
-                { this.state.imgSrc.map((elem, id) => <img src={elem} alt={id} key={id}/>) }
-              </div>
-            </>
-          )
-        }
+  
+        { this.state.submitValue && <Images query = { this.state.submitValue } /> }
       </>
     )
   }
