@@ -1,5 +1,5 @@
 import { Loader } from './Loader';
-import { useEffect, useReducer } from 'react';
+import { useEffect, useReducer, useRef } from 'react';
 
 const
   FETCH_SRC = 'FETCH_SRC',
@@ -11,14 +11,12 @@ const reducer = (state, { type, payload }) => {
       return {
         ...state,
         imgSrc: payload,
-        loaded: 0,
         isLoading: payload.length > 0,
       };
     case LOAD_IMG:
       return {
         ...state,
-        loaded: state.loaded + 1,
-        isLoading: state.loaded + 1 !== payload.length,
+        isLoading: payload,
       };
     default :
       return {
@@ -29,11 +27,12 @@ const reducer = (state, { type, payload }) => {
 
 export const Images = ({ query }) => {
   
-  const [{ imgSrc, loaded, isLoading }, dispatch] = useReducer(reducer, {
+  const [{ imgSrc, isLoading }, dispatch] = useReducer(reducer, {
     imgSrc: null,
-    loaded: 0,
     isLoading: false,
   });
+  
+  const loadingStatus = useRef();
   
   useEffect( () => {
     
@@ -45,16 +44,25 @@ export const Images = ({ query }) => {
   
       dispatch({
         type: FETCH_SRC,
-        payload: images
+        payload: images,
       });
+      
+      let loaded = 0;
+      
+      const getImages = () => {
+        loaded++;
+        loadingStatus.current.textContent = Math.round(loaded / images.length * 100);
+        dispatch({
+          type: LOAD_IMG,
+          payload: images.length !== loaded,
+        });
+      };
   
       images.forEach(src => {
         let img = new Image();
         img.src = src;
-        img.onload = () => dispatch({
-          type: LOAD_IMG,
-          payload: images,
-        });
+        img.onload = getImages;
+        img.onerror = getImages;
       });
     };
     
@@ -67,7 +75,7 @@ export const Images = ({ query }) => {
       { isLoading
         ?
         <>
-          <p>Loading { Math.round(loaded/imgSrc.length*100) }%</p>
+          <p>Loading <span ref={loadingStatus} />%</p>
           <Loader />
         </>
         : imgSrc && (

@@ -10,6 +10,7 @@ export class ClassBased extends Component {
       value: '',
       submitValue: null,
     };
+    this.history = [];
   }
   
   changeHandler = event => {
@@ -17,13 +18,25 @@ export class ClassBased extends Component {
   };
   
   submitHandler = event => {
-    
     event.preventDefault();
     let currentValue = this.state.value.trim();
     this.setState({value: currentValue});
-    if (!currentValue) return;
-    this.setState({submitValue: currentValue});
-    
+    if (!currentValue || currentValue === this.state.submitValue) return;
+    this.setState(({submitValue: prev}) => {
+      if(prev) this.history = [prev,...this.history.slice(0, 4)];
+      return {submitValue: currentValue}
+    });
+  }
+  
+  undoSearch = event => {
+    event.preventDefault();
+    if(!this.history.length) return;
+    let currentValue = this.history[0];
+    this.history = this.history.slice(1);
+    this.setState({
+        value: currentValue,
+        submitValue: currentValue,
+    });
   }
   
   render() {
@@ -32,7 +45,7 @@ export class ClassBased extends Component {
         <header>
           ClassBased component
         </header>
-        <form onSubmit = { this.submitHandler }>
+        <form className = 'container' onSubmit = { this.submitHandler }>
           <input
             className = 'form-search'
             type = 'text'
@@ -40,15 +53,18 @@ export class ClassBased extends Component {
             value = { this.state.value }
             onChange = { this.changeHandler }
             required
+            autoFocus
           />
-          <input
-            className = 'form-submit'
-            type = 'submit'
-            value = 'Search'
-          />
+          <button title = 'Search'>
+            <i className = 'fas fa-search'/>
+          </button>
+          <button type = 'button' title = 'Undo' onClick = { this.undoSearch }>
+            <i className = 'fas fa-undo'/>
+          </button>
         </form>
   
         { this.state.submitValue && <Images query = { this.state.submitValue } /> }
+        
       </>
     )
   }

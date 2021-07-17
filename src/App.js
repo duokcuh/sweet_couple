@@ -10,7 +10,7 @@ function App() {
   return (
     <div className="App">
       
-      <div className="btn-wrapper">
+      <div className="container">
         <button onClick={() => setType('class')}>
           ClassBased
         </button>
