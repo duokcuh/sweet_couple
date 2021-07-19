@@ -1,11 +1,15 @@
 import { useRef, useState } from 'react';
 import { Images } from './Images';
+import { HistoryButton } from './HistoryButton';
 
 export const Functional = () => {
   
   const [ value, setValue ] = useState('');
   const [ submitValue, setSubmitValue ] = useState(null);
-  const history = useRef([]);
+  const history = useRef({
+    arr: [],
+    id: 0,
+  });
   
   const changeHandler = event => {
     setValue(event.target.value.trim() && event.target.value);
@@ -16,17 +20,20 @@ export const Functional = () => {
     let currentValue = value.trim();
     setValue(currentValue);
     if (!currentValue || currentValue === submitValue) return;
-    setSubmitValue(prev => {
-      if(prev) history.current = [prev,...history.current.slice(0, 4)];
-      return currentValue
-    });
-  }
+    let { arr, id } = history.current;
+    history.current = {
+      arr: [currentValue, ...arr.slice(id, id+4)],
+      id: 0,
+    };
+    setSubmitValue(currentValue);
+  };
   
-  const undoSearch = event => {
+  const undoSearch = (event, param) => {
     event.preventDefault();
-    if(!history.current.length) return;
-    let currentValue = history.current[0];
-    history.current = history.current.slice(1);
+    let { arr, id } = history.current;
+    if(arr[id + param] === undefined) return;
+    let currentValue = arr[id + param];
+    history.current.id = id + param;
     setValue(currentValue);
     setSubmitValue(currentValue);
   }
@@ -47,11 +54,19 @@ export const Functional = () => {
           autoFocus
         />
         <button title = 'Search'>
-          <i className = 'fas fa-search'/>
+          <i className = 'fas fa-search' />
         </button>
-        <button type = 'button' title = 'Undo' onClick = { undoSearch }>
-          <i className = 'fas fa-undo'/>
-        </button>
+        <HistoryButton
+          history = { history.current }
+          type = 'back'
+          clickHandler = { undoSearch }
+        />
+        <HistoryButton
+          history = { history.current }
+          type = 'forward'
+          clickHandler = { undoSearch }
+        />
+        
       </form>
       
       { submitValue && <Images query = { submitValue } /> }

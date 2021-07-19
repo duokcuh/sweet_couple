@@ -1,5 +1,6 @@
 import { Component } from 'react';
 import { Images } from './Images';
+import { HistoryButton } from './HistoryButton';
 
 
 export class ClassBased extends Component {
@@ -10,7 +11,10 @@ export class ClassBased extends Component {
       value: '',
       submitValue: null,
     };
-    this.history = [];
+    this.history = {
+      arr: [],
+      id: 0,
+    };
   }
   
   changeHandler = event => {
@@ -22,20 +26,23 @@ export class ClassBased extends Component {
     let currentValue = this.state.value.trim();
     this.setState({value: currentValue});
     if (!currentValue || currentValue === this.state.submitValue) return;
-    this.setState(({submitValue: prev}) => {
-      if(prev) this.history = [prev,...this.history.slice(0, 4)];
-      return {submitValue: currentValue}
-    });
+    let { arr, id } = this.history;
+    this.history = {
+      arr: [currentValue, ...arr.slice(id, id+4)],
+      id: 0,
+    };
+    this.setState({submitValue: currentValue});
   }
   
-  undoSearch = event => {
+  undoSearch = (event, param) => {
     event.preventDefault();
-    if(!this.history.length) return;
-    let currentValue = this.history[0];
-    this.history = this.history.slice(1);
+    let { arr, id } = this.history;
+    if(arr[id + param] === undefined) return;
+    let currentValue = arr[id + param];
+    this.history.id = id + param;
     this.setState({
-        value: currentValue,
-        submitValue: currentValue,
+      value: currentValue,
+      submitValue: currentValue
     });
   }
   
@@ -58,9 +65,16 @@ export class ClassBased extends Component {
           <button title = 'Search'>
             <i className = 'fas fa-search'/>
           </button>
-          <button type = 'button' title = 'Undo' onClick = { this.undoSearch }>
-            <i className = 'fas fa-undo'/>
-          </button>
+          <HistoryButton
+            history = { this.history }
+            type = 'back'
+            clickHandler = { this.undoSearch }
+          />
+          <HistoryButton
+            history = { this.history }
+            type = 'forward'
+            clickHandler = { this.undoSearch }
+          />
         </form>
   
         { this.state.submitValue && <Images query = { this.state.submitValue } /> }
