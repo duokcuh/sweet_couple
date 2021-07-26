@@ -77,7 +77,7 @@ export class ClassBased extends Component {
           />
         </form>
   
-        { this.state.submitValue && <Images query = { this.state.submitValue } /> }
+        { this.state.submitValue && <Images query = { this.state.submitValue } key = { this.submitValue } /> }
         
       </>
     )

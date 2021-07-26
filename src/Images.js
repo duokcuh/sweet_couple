@@ -51,6 +51,7 @@ export const Images = ({ query }) => {
       
       const getImages = () => {
         loaded++;
+        if(loadingStatus.current === null) return;
         loadingStatus.current.textContent = Math.round(loaded / images.length * 100);
         dispatch({
           type: LOAD_IMG,
@@ -66,13 +67,15 @@ export const Images = ({ query }) => {
       });
     };
     
-    getSrc();
+    getSrc().then();
+    
+    //prevent loading case new request
+    return () => window.stop();
   
   }, [query]);
   
   return (
-    <>
-      { isLoading
+    <>{ isLoading
         ?
         <>
           <p>Loading <span ref={loadingStatus} />%</p>
